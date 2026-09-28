@@ -1,0 +1,33 @@
+{
+  "type": "record",
+  "name": "MeterReading",
+  "namespace": "wattstream",
+  "doc": "One reading from an ESP32-style smart meter.",
+  "fields": [
+    {
+      "name": "device_id",
+      "type": "string",
+      "doc": "Meter ID, e.g. meter-01. Also used as the Kafka message key."
+    },
+    {
+      "name": "event_ts",
+      "type": {"type": "long", "logicalType": "timestamp-millis"},
+      "doc": "When the meter took the reading (event time), in milliseconds since the Unix epoch, UTC."
+    },
+    {
+      "name": "voltage_v",
+      "type": "double",
+      "doc": "Voltage in volts."
+    },
+    {
+      "name": "current_a",
+      "type": "double",
+      "doc": "Current in amps."
+    },
+    {
+      "name": "power_w",
+      "type": "double",
+      "doc": "Power in watts: voltage_v x current_a."
+    }
+  ]
+}

@@ -1,0 +1,9 @@
+# Kafka client (wraps librdkafka) + Schema Registry client + Avro serializer
+confluent-kafka[avro,schemaregistry]>=2.15
+# authlib 1.8 (pulled in by the Schema Registry client) prints a deprecation
+# warning on every import, because confluent-kafka still uses httpx, not httpx2
+authlib<1.8
+# Reads settings and API keys from the git-ignored .env file
+python-dotenv>=1.2
+# Unit tests
+pytest>=9.0
