@@ -141,17 +141,12 @@ wattstream/
 
 ## What I learned
 
-<!--
-Write this part in your own words. Prompts:
-- Key -> partition: what did you see when meter-01 and meter-03 both landed on partition 0?
-- Event time vs processing time: why do the windows use $rowtime, and what does a watermark do?
-- Partitions and parallelism: why did the second consumer in the same group sit idle?
-- Schema Registry: what would happen if you changed the schema, and why is Avro smaller than JSON?
-- Production: what would you change (service accounts, ACLs, monitoring, keyed output topics)?
-- A problem you hit and how you solved it.
--->
-
-_Coming soon._
+- **Keys decide partitions, and order only holds within a partition.** I keyed every reading by `device_id`, and each meter always landed on the same partition: meter-01 and meter-03 shared partition 0, while partitions 1, 3 and 4 stayed empty. Kafka hashes the key to choose the partition, so one meter's readings stay in order, but different meters can share a partition.
+- **Event time makes results repeatable.** The producer writes each reading's timestamp into the Kafka record, and Flink uses it as `$rowtime`. I started the window job about 25 minutes after my first test readings, and those readings still landed in the right minute (18:58). The watermark is Flink's signal that event time has passed the end of a window, so the window can be closed and emitted.
+- **More consumers only help if the data is spread out.** A second consumer in the same group took partitions 0–2 and printed nothing, because every new alert was landing on partition 5. It didn't replay old alerts either, because offsets belong to the group, not to one process. Keying the alerts by `device_id` would spread them out so both consumers do work.
+- **A schema is a contract.** The producer registered the Avro schema once, and after that each message carries only a schema ID, so a reading is about 44 bytes. Flink read the same schema and showed my fields as typed columns, with my field descriptions as column comments.
+- **Small details cost money or time.** The Create cluster page pre-selected a Standard cluster at $1.50 an hour, when a Basic cluster (first unit free) was all this project needed. A deprecation warning on every run came from `authlib`, a library the Schema Registry client pulls in, and capping its version in `requirements.txt` fixed it.
+- **What I'd change for production:** a service account with least-privilege permissions for each app instead of my personal API keys, output topics keyed by `device_id`, and monitoring of consumer lag.
 
 ## Stretch goals
 
